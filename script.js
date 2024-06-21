@@ -1,4 +1,46 @@
+const body = document.querySelector('body');
+const boardDOM = document.querySelector('.gameboard');
 const fields = document.querySelectorAll('.field');
+let character = 'X';
+let roundNo = 0;
+
+fields.forEach((field, index) => {
+    field.setAttribute('ID', index)
+    field.addEventListener('click', () => {
+        roundNo++;
+        if (field.textContent !== '')
+            return
+        game.put(character, Math.floor(index / 3), index % 3);
+        game.draw()
+        if (game.checkIfWin(character)){
+            drawWin(character);
+            disableInput();
+        }
+        if (game.isDraw()){
+            drawDraw();
+            disableInput()
+        }
+        character = character === 'X' ? 'O' : 'X';
+    })
+});
+
+function drawWin(character){
+    const h2 = document.createElement('h2');
+    h2.textContent = `${character} has won!`;
+    body.appendChild(h2);
+}
+
+function drawDraw(){
+    const h2 = document.createElement('h2');
+    h2.textContent = 'It\'s a draw';
+    body.appendChild(h2);
+}
+
+function disableInput(){
+    fields.forEach((field) => {
+        field.style.pointerEvents = 'none';
+    });
+}
 
 function createPlayer(name) {
     let score = 0;
@@ -45,7 +87,11 @@ const game = (function () {
         fields[8].innerHTML = board[2][2];
     }
 
-    return {checkIfWin, put, draw}
+    const isDraw = () => {
+        return roundNo === 9;
+    }
+
+    return {checkIfWin, put, draw, isDraw}
 })();
 
 
@@ -57,14 +103,3 @@ function getUserInput() {
         j: field[1]
     }
 }
-
-let character = 'X';
-do {
-    character = character === 'X' ? 'O' : 'X';
-    game.draw()
-    let {i, j} = getUserInput();
-    console.log(i + ' ' + j)
-    game.put(character, i, j)
-
-} while (!game.checkIfWin(character));
-console.log(`Player ${character} won or a draw`)
