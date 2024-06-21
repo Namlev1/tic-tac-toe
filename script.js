@@ -1,3 +1,5 @@
+const fields = document.querySelectorAll('.field');
+
 function createPlayer(name) {
     let score = 0;
     const win = () => score++;
@@ -8,7 +10,7 @@ function createPlayer(name) {
 const game = (function () {
     let board = new Array(3);
     for (let i = 0; i < 3; i++) {
-        board[i] = new Array(3).fill(0);
+        board[i] = new Array(3).fill('');
     }
 
     const checkIfWin = (character) => {
@@ -32,9 +34,15 @@ const game = (function () {
     }
 
     const draw = () => {
-        console.log(`${board[0][0]} ${board[0][1]} ${board[0][2]}`);
-        console.log(`${board[1][0]} ${board[1][1]} ${board[1][2]}`);
-        console.log(`${board[2][0]} ${board[2][1]} ${board[2][2]}`);
+        fields[0].innerHTML = board[0][0];
+        fields[1].innerHTML = board[0][1];
+        fields[2].innerHTML = board[0][2];
+        fields[3].innerHTML = board[1][0];
+        fields[4].innerHTML = board[1][1];
+        fields[5].innerHTML = board[1][2];
+        fields[6].innerHTML = board[2][0];
+        fields[7].innerHTML = board[2][1];
+        fields[8].innerHTML = board[2][2];
     }
 
     return {checkIfWin, put, draw}

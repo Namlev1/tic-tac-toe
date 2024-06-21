@@ -1,3 +1,33 @@
+:root{
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 16px;
+}
+
+h1{
+    font-size: 4rem;
+}
+
 body{
-    background-color: black;
+    background-color: lightsalmon;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+.gameboard{
+    display: grid;
+    grid: repeat(3, 1fr) / repeat(3, 1fr);
+    gap: 4px;
+    background-color: lightgray;
+    width: 600px;
+    height: 600px;
+}
+
+.field{
+    background-color: lightsalmon;
+    font-size: 5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
