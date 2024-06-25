@@ -1,105 +1,125 @@
 const body = document.querySelector('body');
-const boardDOM = document.querySelector('.gameboard');
 const fields = document.querySelectorAll('.field');
+const form = document.querySelector('form');
 let character = 'X';
-let roundNo = 0;
 
-fields.forEach((field, index) => {
-    field.setAttribute('ID', index)
-    field.addEventListener('click', () => {
-        roundNo++;
-        if (field.textContent !== '')
-            return
-        game.put(character, Math.floor(index / 3), index % 3);
-        game.draw()
-        if (game.checkIfWin(character)){
-            drawWin(character);
-            disableInput();
-        }
-        if (game.isDraw()){
-            drawDraw();
-            disableInput()
-        }
-        character = character === 'X' ? 'O' : 'X';
-    })
-});
+form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let p1Name = form.elements['p1-name'].value;
+    let p2Name = form.elements['p2-name'].value;
+    game.namePlayers(p1Name, p2Name)
+    form.remove();
+    game.start();
+})
 
-function drawWin(character){
+function drawWin(character) {
     const h2 = document.createElement('h2');
     h2.textContent = `${character} has won!`;
     body.appendChild(h2);
 }
 
-function drawDraw(){
+function drawDraw() {
     const h2 = document.createElement('h2');
     h2.textContent = 'It\'s a draw';
     body.appendChild(h2);
 }
 
-function disableInput(){
+function disableInput() {
     fields.forEach((field) => {
         field.style.pointerEvents = 'none';
     });
 }
 
-function createPlayer(name) {
-    let score = 0;
-    const win = () => score++;
-    const getScore = () => score;
-    return {name, win, getScore};
-}
-
 const game = (function () {
-    let board = new Array(3);
-    for (let i = 0; i < 3; i++) {
-        board[i] = new Array(3).fill('');
-    }
-
-    const checkIfWin = (character) => {
+    const gameBoard = (function () {
+        let board = new Array(3);
         for (let i = 0; i < 3; i++) {
-            if (board[i].every(cell => cell === character))
-                return true
-            if (board[0][i] === character && board[1][i] === character && board[2][i] === character)
-                return true
+            board[i] = new Array(3).fill('');
         }
-        if (board[0][0] === character && board[1][1] === character && board[2][2] === character)
-            return true
-        if (board[0][2] === character && board[1][1] === character && board[2][0] === character) {
-            return true
+
+        const checkIfWin = (character) => {
+            for (let i = 0; i < 3; i++) {
+                if (board[i].every(cell => cell === character))
+                    return true
+                if (board[0][i] === character && board[1][i] === character && board[2][i] === character)
+                    return true
+            }
+            if (board[0][0] === character && board[1][1] === character && board[2][2] === character)
+                return true
+            if (board[0][2] === character && board[1][1] === character && board[2][0] === character) {
+                return true
+            }
+            return false;
         }
-        return false;
+
+        const put = (character, i, j) => {
+            console.log(`Putting ${character} into ${i} ${j}`)
+            board[i][j] = character;
+        }
+
+        const draw = (field, i, j) => {
+            field.innerHTML = board[i][j];
+        }
+
+        return {checkIfWin, put, draw}
+    })();
+
+    let roundNo = 0;
+
+    const player1 = createPlayer();
+    const player2 = createPlayer();
+
+    function createPlayer() {
+        let name;
+        let score = 0;
+        const win = () => score++;
+        const getScore = () => score;
+        const setName = (name) => this.name = name;
+        return {name, setName, win, getScore};
     }
 
-    const put = (character, i, j) => {
-        console.log(`Putting ${character} into ${i} ${j}`)
-        board[i][j] = character;
-    }
-
-    const draw = () => {
-        fields[0].innerHTML = board[0][0];
-        fields[1].innerHTML = board[0][1];
-        fields[2].innerHTML = board[0][2];
-        fields[3].innerHTML = board[1][0];
-        fields[4].innerHTML = board[1][1];
-        fields[5].innerHTML = board[1][2];
-        fields[6].innerHTML = board[2][0];
-        fields[7].innerHTML = board[2][1];
-        fields[8].innerHTML = board[2][2];
+    const namePlayers = (name1, name2) => {
+        player1.setName(name1);
+        player2.setName(name2);
     }
 
     const isDraw = () => {
         return roundNo === 9;
     }
 
-    return {checkIfWin, put, draw, isDraw}
-})();
-
-
-function getUserInput() {
-    let field = prompt('Select a field')
-    field = field.split(' ')
-    return {
-        i: field[0],
-        j: field[1]
+    function start() {
+        const gameBoard = document.createElement('div')
+        gameBoard.classList.add('gameboard')
+        for (let i = 0; i < 9; i++) {
+            const field = document.createElement('div');
+            field.classList.add('field');
+            field.setAttribute('i', String(Math.floor(i / 3)))
+            field.setAttribute('j', String(i % 3))
+            field.addEventListener("click", fieldEventListener)
+            gameBoard.appendChild(field);
+        }
+        body.appendChild(gameBoard)
     }
-}
+
+    function fieldEventListener(e) {
+        const field = e.target;
+        const i = field.getAttribute('i');
+        const j = field.getAttribute('j');
+        roundNo++;
+        if (field.textContent !== '')
+            return
+        gameBoard.put(character, i, j);
+        gameBoard.draw(field, i, j);
+        if (gameBoard.checkIfWin(character)) {
+            drawWin(character);
+            disableInput();
+        }
+        if (isDraw()) {
+            drawDraw();
+            disableInput()
+        }
+        character = character === 'X' ? 'O' : 'X';
+    }
+
+    return {namePlayers, start}
+})();
