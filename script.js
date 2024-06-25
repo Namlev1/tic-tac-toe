@@ -7,6 +7,8 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
     let p1Name = form.elements['p1-name'].value;
     let p2Name = form.elements['p2-name'].value;
+    console.log(p1Name)
+    console.log(p2Name)
     game.namePlayers(p1Name, p2Name)
     form.remove();
     game.start();
@@ -25,6 +27,7 @@ function drawDraw() {
 }
 
 function disableInput() {
+    const fields = document.querySelectorAll('.field');
     fields.forEach((field) => {
         field.style.pointerEvents = 'none';
     });
@@ -74,12 +77,17 @@ const game = (function () {
         let score = 0;
         const win = () => score++;
         const getScore = () => score;
-        const setName = (name) => this.name = name;
-        return {name, setName, win, getScore};
+        const setName = (newName) => {
+            name = newName;
+        }
+        const getName = () => name;
+        return {getName, setName, win, getScore};
     }
 
     const namePlayers = (name1, name2) => {
+        console.log(name1)
         player1.setName(name1);
+        console.log(player1)
         player2.setName(name2);
     }
 
@@ -88,6 +96,23 @@ const game = (function () {
     }
 
     function start() {
+        const mainDiv = document.createElement('div')
+        mainDiv.classList.add('main');
+        console.log(player1)
+        console.log(player2)
+
+        function createSidePanel(player) {
+            const sidePanel = document.createElement('div')
+            sidePanel.classList.add('side-panel');
+            const playerHeader = document.createElement('h2');
+            playerHeader.innerText = player.getName();
+            sidePanel.appendChild(playerHeader);
+            return sidePanel;
+        }
+
+        const sideLeft = createSidePanel(player1);
+        const sideRight = createSidePanel(player2);
+
         const gameBoard = document.createElement('div')
         gameBoard.classList.add('gameboard')
         for (let i = 0; i < 9; i++) {
@@ -98,7 +123,11 @@ const game = (function () {
             field.addEventListener("click", fieldEventListener)
             gameBoard.appendChild(field);
         }
-        body.appendChild(gameBoard)
+
+        mainDiv.appendChild(sideLeft);
+        mainDiv.appendChild(gameBoard);
+        mainDiv.appendChild(sideRight);
+        body.appendChild(mainDiv)
     }
 
     function fieldEventListener(e) {
