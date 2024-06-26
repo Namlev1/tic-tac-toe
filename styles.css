@@ -3,6 +3,14 @@
     font-size: 22px;
 }
 
+body {
+    background-color: lightsalmon;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 2rem 2rem;
+}
+
 h1 {
     font-size: 3rem;
 }
@@ -11,12 +19,45 @@ h2 {
     font-size: 2.5rem;
 }
 
-body {
-    background-color: lightsalmon;
+button {
+    font-size: 1.2rem;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+}
+
+form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0 2rem 2rem;
+    gap: 1rem;
+}
+
+form > div {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+dialog > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+dialog > div > p {
+    margin: 10px;
+}
+
+dialog > div > button {
+    margin-top: 20px;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    justify-items: center;
+    align-items: start;
+    width: 100%;
 }
 
 .gameboard {
@@ -34,33 +75,6 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-form > div {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.start-btn {
-    font-size: 1.2rem;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-}
-
-.main {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    justify-items: center;
-    align-items: start;
-    width: 100%;
 }
 
 .side-panel {
@@ -98,18 +112,4 @@ form > div {
 
 .win-check:checked::before {
     visibility: visible;
-}
-
-dialog > div{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-dialog > div > p{
-    margin: 10px;
-}
-
-dialog > div > button {
-    margin-top: 20px;
 }

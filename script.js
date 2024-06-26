@@ -1,12 +1,11 @@
 const body = document.querySelector('body');
-const fields = document.querySelectorAll('.field');
 const form = document.querySelector('form');
 const newGameBtn = document.querySelector('dialog button');
 const dialog = document.querySelector('dialog')
 const dialogContent = dialog.children[0]
 let character = 'X';
 
-newGameBtn.addEventListener('click', e => {
+newGameBtn.addEventListener('click', () => {
     dialog.close()
     game.restart();
 })
@@ -15,26 +14,10 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
     let p1Name = form.elements['p1-name'].value;
     let p2Name = form.elements['p2-name'].value;
-    console.log(p1Name)
-    console.log(p2Name)
     game.namePlayers(p1Name, p2Name)
     form.remove();
     game.start();
 })
-
-function disableInput() {
-    const fields = document.querySelectorAll('.field');
-    fields.forEach((field) => {
-        field.style.pointerEvents = 'none';
-    });
-}
-
-function enableInput() {
-    const fields = document.querySelectorAll('.field');
-    fields.forEach((field) => {
-        field.style.pointerEvents = 'auto';
-    });
-}
 
 const game = (function () {
     const gameBoard = (function () {
@@ -62,26 +45,19 @@ const game = (function () {
             board[i][j] = character;
         }
 
-        const draw = (field, i, j) => {
+        const drawBoard = (field, i, j) => {
             field.innerHTML = board[i][j];
         }
 
-        const clear = () => {
+        const clearBoard = () => {
             board.forEach(column => column.fill(''))
-            const fields = document.querySelectorAll('.field');
-            fields.forEach((field) => {
+            document.querySelectorAll('.field').forEach((field) => {
                 field.innerHTML = ''
             })
         }
 
-        return {checkIfWin, put, draw, clear}
+        return {checkIfWin, put, draw: drawBoard, clear: clearBoard}
     })();
-
-    let turnNo = 0;
-    let roundNo = 0;
-
-    const player1 = createPlayer();
-    const player2 = createPlayer();
 
     function createPlayer() {
         let name;
@@ -95,45 +71,6 @@ const game = (function () {
         return {getName, setName, win, getScore};
     }
 
-    function drawWin(winner) {
-        const h2 = document.createElement('h2');
-        h2.textContent = `${winner.getName()} has won!`;
-        body.appendChild(h2);
-        const newRoundBtn = createNewRoundBtn()
-        newRoundBtn.addEventListener('click', (e) => newRound(e, h2))
-        body.appendChild(newRoundBtn);
-    }
-
-    function drawDraw() {
-        const h2 = document.createElement('h2');
-        h2.textContent = 'It\'s a draw';
-        body.appendChild(h2);
-        const newRoundBtn = createNewRoundBtn()
-        newRoundBtn.addEventListener('click', (e) => newRound(e, h2))
-        body.appendChild(newRoundBtn);
-    }
-
-    function createNewRoundBtn() {
-        const btn = document.createElement('button');
-        btn.textContent = 'New Round';
-        btn.classList.add('start-btn')
-        return btn;
-    }
-
-    function newRound(e, winText) {
-        console.log('new round')
-        e.target.remove();
-        winText.remove();
-        gameBoard.clear();
-        enableInput();
-        turnNo = 0;
-        roundNo++;
-    }
-
-    const restart = () => {
-        location.reload();
-    }
-
     const namePlayers = (name1, name2) => {
         console.log(name1)
         player1.setName(name1);
@@ -141,44 +78,50 @@ const game = (function () {
         player2.setName(name2);
     }
 
-    const isDraw = () => {
-        return turnNo > 8;
-    }
-
-    const isGameOver = () => {
-        return player1.getScore() >= 3 || player2.getScore() >= 3;
-    }
+    const player1 = createPlayer();
+    const player2 = createPlayer();
+    let turnNo = 0;
+    let roundNo = 0;
 
     function start() {
         const mainDiv = document.createElement('div')
         mainDiv.classList.add('main');
-
-        function createSidePanel(player) {
-            const sidePanel = document.createElement('div')
-            sidePanel.classList.add('side-panel');
-            const playerHeader = document.createElement('h2');
-            playerHeader.innerText = player.getName();
-            sidePanel.appendChild(playerHeader);
-
-            const checkboxDiv = document.createElement('div');
-            checkboxDiv.classList.add('win-check-container');
-            for (let i = 0; i < 3; i++) {
-                const winCheckBox = document.createElement('input')
-                winCheckBox.type = 'checkbox';
-                winCheckBox.disabled = true;
-                winCheckBox.classList.add('win-check');
-                checkboxDiv.appendChild(winCheckBox);
-            }
-            sidePanel.appendChild(checkboxDiv);
-
-            return sidePanel;
-        }
 
         const sideLeft = createSidePanel(player1);
         const sideRight = createSidePanel(player2);
 
         const gameBoard = document.createElement('div')
         gameBoard.classList.add('gameboard')
+        createFields(gameBoard);
+
+        mainDiv.appendChild(sideLeft);
+        mainDiv.appendChild(gameBoard);
+        mainDiv.appendChild(sideRight);
+        body.appendChild(mainDiv)
+    }
+
+    function createSidePanel(player) {
+        const sidePanel = document.createElement('div')
+        sidePanel.classList.add('side-panel');
+        const playerHeader = document.createElement('h2');
+        playerHeader.innerText = player.getName();
+        sidePanel.appendChild(playerHeader);
+
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.classList.add('win-check-container');
+        for (let i = 0; i < 3; i++) {
+            const winCheckBox = document.createElement('input')
+            winCheckBox.type = 'checkbox';
+            winCheckBox.disabled = true;
+            winCheckBox.classList.add('win-check');
+            checkboxDiv.appendChild(winCheckBox);
+        }
+        sidePanel.appendChild(checkboxDiv);
+
+        return sidePanel;
+    }
+
+    function createFields(gameBoard) {
         for (let i = 0; i < 9; i++) {
             const field = document.createElement('div');
             field.classList.add('field');
@@ -187,11 +130,6 @@ const game = (function () {
             field.addEventListener("click", fieldEventListener)
             gameBoard.appendChild(field);
         }
-
-        mainDiv.appendChild(sideLeft);
-        mainDiv.appendChild(gameBoard);
-        mainDiv.appendChild(sideRight);
-        body.appendChild(mainDiv)
     }
 
     function fieldEventListener(e) {
@@ -226,6 +164,44 @@ const game = (function () {
         character = character === 'X' ? 'O' : 'X';
     }
 
+    function drawWin(winner) {
+        const h2 = document.createElement('h2');
+        h2.textContent = `${winner.getName()} has won!`;
+        body.appendChild(h2);
+        const newRoundBtn = createNewRoundBtn()
+        newRoundBtn.addEventListener('click', (e) => newRound(e, h2))
+        body.appendChild(newRoundBtn);
+    }
+
+    function drawDraw() {
+        const h2 = document.createElement('h2');
+        h2.textContent = 'It\'s a draw';
+        body.appendChild(h2);
+        const newRoundBtn = createNewRoundBtn()
+        newRoundBtn.addEventListener('click', (e) => newRound(e, h2))
+        body.appendChild(newRoundBtn);
+    }
+
+    function createNewRoundBtn() {
+        const btn = document.createElement('button');
+        btn.textContent = 'New Round';
+        return btn;
+    }
+
+    function newRound(e, winText) {
+        console.log('new round')
+        e.target.remove();
+        winText.remove();
+        gameBoard.clear();
+        enableInput();
+        turnNo = 0;
+        roundNo++;
+    }
+
+    const isDraw = () => turnNo > 8;
+
+    const isGameOver = () => player1.getScore() >= 3 || player2.getScore() >= 3;
+
     function refreshPoints() {
         const containers = document.querySelectorAll('.win-check-container');
         if (player1.getScore() > 0)
@@ -234,23 +210,39 @@ const game = (function () {
             containers[1].children[player2.getScore() - 1].checked = true;
     }
 
-    function endGame(){
+    function endGame() {
         const p1 = dialogContent.children[0]
         const p2 = dialogContent.children[1]
         p1.textContent = 'Game Over!'
 
         const score1 = player1.getScore();
         const score2 = player2.getScore();
-        if (score1 > score2){
+        if (score1 > score2) {
             p2.textContent = `${player1.getName()} has won the game.`;
-        }
-        else if (score1 < score2){
+        } else if (score1 < score2) {
             p2.textContent = `${player2.getName()} has won the game.`;
-        }
-        else {
+        } else {
             p2.textContent = 'It\'s a draw!';
         }
         dialog.showModal();
+    }
+
+    const restart = () => {
+        location.reload();
+    }
+
+    function disableInput() {
+        const fields = document.querySelectorAll('.field');
+        fields.forEach((field) => {
+            field.style.pointerEvents = 'none';
+        });
+    }
+
+    function enableInput() {
+        const fields = document.querySelectorAll('.field');
+        fields.forEach((field) => {
+            field.style.pointerEvents = 'auto';
+        });
     }
 
     return {namePlayers, start, restart}
