@@ -99,3 +99,17 @@ form > div {
 .win-check:checked::before {
     visibility: visible;
 }
+
+dialog > div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+dialog > div > p{
+    margin: 10px;
+}
+
+dialog > div > button {
+    margin-top: 20px;
+}

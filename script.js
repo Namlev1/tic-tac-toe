@@ -1,7 +1,15 @@
 const body = document.querySelector('body');
 const fields = document.querySelectorAll('.field');
 const form = document.querySelector('form');
+const newGameBtn = document.querySelector('dialog button');
+const dialog = document.querySelector('dialog')
+const dialogContent = dialog.children[0]
 let character = 'X';
+
+newGameBtn.addEventListener('click', e => {
+    dialog.close()
+    game.restart();
+})
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -51,7 +59,6 @@ const game = (function () {
         }
 
         const put = (character, i, j) => {
-            console.log(`Putting ${character} into ${i} ${j}`)
             board[i][j] = character;
         }
 
@@ -123,6 +130,10 @@ const game = (function () {
         roundNo++;
     }
 
+    const restart = () => {
+        location.reload();
+    }
+
     const namePlayers = (name1, name2) => {
         console.log(name1)
         player1.setName(name1);
@@ -132,6 +143,10 @@ const game = (function () {
 
     const isDraw = () => {
         return turnNo > 8;
+    }
+
+    const isGameOver = () => {
+        return player1.getScore() >= 3 || player2.getScore() >= 3;
     }
 
     function start() {
@@ -190,16 +205,22 @@ const game = (function () {
         gameBoard.draw(field, i, j);
         if (gameBoard.checkIfWin(character)) {
             const winner = character === 'X' ? player1 : player2;
-            drawWin(winner);
             winner.win();
             refreshPoints();
+            if (isGameOver())
+                endGame();
+            else
+                drawWin(winner);
             disableInput();
         }
         if (isDraw()) {
-            drawDraw();
             player1.win();
             player2.win();
             refreshPoints();
+            if (isGameOver())
+                endGame();
+            else
+                drawDraw();
             disableInput()
         }
         character = character === 'X' ? 'O' : 'X';
@@ -213,5 +234,24 @@ const game = (function () {
             containers[1].children[player2.getScore() - 1].checked = true;
     }
 
-    return {namePlayers, start}
+    function endGame(){
+        const p1 = dialogContent.children[0]
+        const p2 = dialogContent.children[1]
+        p1.textContent = 'Game Over!'
+
+        const score1 = player1.getScore();
+        const score2 = player2.getScore();
+        if (score1 > score2){
+            p2.textContent = `${player1.getName()} has won the game.`;
+        }
+        else if (score1 < score2){
+            p2.textContent = `${player2.getName()} has won the game.`;
+        }
+        else {
+            p2.textContent = 'It\'s a draw!';
+        }
+        dialog.showModal();
+    }
+
+    return {namePlayers, start, restart}
 })();
