@@ -14,22 +14,17 @@ form.addEventListener('submit', (e) => {
     game.start();
 })
 
-function drawWin(character) {
-    const h2 = document.createElement('h2');
-    h2.textContent = `${character} has won!`;
-    body.appendChild(h2);
-}
-
-function drawDraw() {
-    const h2 = document.createElement('h2');
-    h2.textContent = 'It\'s a draw';
-    body.appendChild(h2);
-}
-
 function disableInput() {
     const fields = document.querySelectorAll('.field');
     fields.forEach((field) => {
         field.style.pointerEvents = 'none';
+    });
+}
+
+function enableInput() {
+    const fields = document.querySelectorAll('.field');
+    fields.forEach((field) => {
+        field.style.pointerEvents = 'auto';
     });
 }
 
@@ -64,9 +59,18 @@ const game = (function () {
             field.innerHTML = board[i][j];
         }
 
-        return {checkIfWin, put, draw}
+        const clear = () => {
+            board.forEach(column => column.fill(''))
+            const fields = document.querySelectorAll('.field');
+            fields.forEach((field) => {
+                field.innerHTML = ''
+            })
+        }
+
+        return {checkIfWin, put, draw, clear}
     })();
 
+    let turnNo = 0;
     let roundNo = 0;
 
     const player1 = createPlayer();
@@ -84,6 +88,41 @@ const game = (function () {
         return {getName, setName, win, getScore};
     }
 
+    function drawWin(winner) {
+        const h2 = document.createElement('h2');
+        h2.textContent = `${winner.getName()} has won!`;
+        body.appendChild(h2);
+        const newRoundBtn = createNewRoundBtn()
+        newRoundBtn.addEventListener('click', (e) => newRound(e, h2))
+        body.appendChild(newRoundBtn);
+    }
+
+    function drawDraw() {
+        const h2 = document.createElement('h2');
+        h2.textContent = 'It\'s a draw';
+        body.appendChild(h2);
+        const newRoundBtn = createNewRoundBtn()
+        newRoundBtn.addEventListener('click', (e) => newRound(e, h2))
+        body.appendChild(newRoundBtn);
+    }
+
+    function createNewRoundBtn() {
+        const btn = document.createElement('button');
+        btn.textContent = 'New Round';
+        btn.classList.add('start-btn')
+        return btn;
+    }
+
+    function newRound(e, winText) {
+        console.log('new round')
+        e.target.remove();
+        winText.remove();
+        gameBoard.clear();
+        enableInput();
+        turnNo = 0;
+        roundNo++;
+    }
+
     const namePlayers = (name1, name2) => {
         console.log(name1)
         player1.setName(name1);
@@ -92,14 +131,12 @@ const game = (function () {
     }
 
     const isDraw = () => {
-        return roundNo === 9;
+        return turnNo > 8;
     }
 
     function start() {
         const mainDiv = document.createElement('div')
         mainDiv.classList.add('main');
-        console.log(player1)
-        console.log(player2)
 
         function createSidePanel(player) {
             const sidePanel = document.createElement('div')
@@ -107,6 +144,18 @@ const game = (function () {
             const playerHeader = document.createElement('h2');
             playerHeader.innerText = player.getName();
             sidePanel.appendChild(playerHeader);
+
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.classList.add('win-check-container');
+            for (let i = 0; i < 3; i++) {
+                const winCheckBox = document.createElement('input')
+                winCheckBox.type = 'checkbox';
+                winCheckBox.disabled = true;
+                winCheckBox.classList.add('win-check');
+                checkboxDiv.appendChild(winCheckBox);
+            }
+            sidePanel.appendChild(checkboxDiv);
+
             return sidePanel;
         }
 
@@ -131,23 +180,37 @@ const game = (function () {
     }
 
     function fieldEventListener(e) {
+        turnNo++;
         const field = e.target;
         const i = field.getAttribute('i');
         const j = field.getAttribute('j');
-        roundNo++;
         if (field.textContent !== '')
             return
         gameBoard.put(character, i, j);
         gameBoard.draw(field, i, j);
         if (gameBoard.checkIfWin(character)) {
-            drawWin(character);
+            const winner = character === 'X' ? player1 : player2;
+            drawWin(winner);
+            winner.win();
+            refreshPoints();
             disableInput();
         }
         if (isDraw()) {
             drawDraw();
+            player1.win();
+            player2.win();
+            refreshPoints();
             disableInput()
         }
         character = character === 'X' ? 'O' : 'X';
+    }
+
+    function refreshPoints() {
+        const containers = document.querySelectorAll('.win-check-container');
+        if (player1.getScore() > 0)
+            containers[0].children[player1.getScore() - 1].checked = true;
+        if (player2.getScore() > 0)
+            containers[1].children[player2.getScore() - 1].checked = true;
     }
 
     return {namePlayers, start}
